@@ -1,6 +1,11 @@
 package sec_final;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -9,6 +14,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Scanner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jmx.remote.internal.ArrayQueue;
 
 /**
@@ -29,6 +35,9 @@ import com.sun.jmx.remote.internal.ArrayQueue;
 public class WarGame {
 	private static final int NUM_CARD = 13;
 	private static final int TOTAL_CARD = NUM_CARD * 2;
+	
+	public static final String GAME_DATA_FILE = "game_data.txt";
+	
 	// 手札
 	Deque<Card> playerDeck;
 	Deque<Card> comDeck;
@@ -40,18 +49,36 @@ public class WarGame {
 	// ターン
 	int numOfTurn;
 	
+	// ゲームデータ
+	GameData data = new GameData();
+	
 	/**
 	 * ゲームを保存します
+	 * @throws IOException 
 	 * 
 	 */
-	void saveGame() {
+	void saveGame(String file, GameData data) throws IOException {
+		// FIXME 上書き確認
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+			ObjectMapper mapper = new ObjectMapper();
+			writer.write(mapper.writeValueAsString(data));
+			
+		}
 	}
 	/**
 	 * ファイルからゲームを復元します
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 * 
 	 */
-	void restoreGame() {
-		
+	GameData restoreGame(String file) throws FileNotFoundException, IOException {
+		try (FileInputStream is = new FileInputStream(file)) {
+			byte[] bytes = new byte[is.available()];
+			is.read(bytes);
+			
+			ObjectMapper mapper = new ObjectMapper();
+			return mapper.readValue(bytes, GameData.class);
+		}
 	}
 	/**
 	 * どちらのカードの数字が大きいか？
@@ -182,7 +209,7 @@ public class WarGame {
 
 		numOfTurn = 0;
 		int nCards = NUM_CARD;
-		File breakFile = new File("game_break.csv");
+		File breakFile = new File(GAME_DATA_FILE);
 		if (breakFile.exists()) {
 			// 中断したゲームがある場合にはファイルからゲームを復元します
 			

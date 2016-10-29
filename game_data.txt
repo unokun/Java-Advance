@@ -1,0 +1,1 @@
+{"playerWonCards":2,"comWonCards":3,"pendingCards":4,"numOfTurn":1}
